@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -13,72 +7,78 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-enum SubscriptionStatus {
-  ACTIVE @map("active")
-  INACTIVE @map("inactive")
-}
-enum DeliveryStatus {
-  PENDING @map("pending")
-  PROCESSING @map("processing")
-  SUCCESS @map("success")
-  RETRYING @map("retrying")
-  DEAD_LETTER @map("dead-letter")
 
-}
-model Event{
-  id String @id @db.Uuid
-  type String
-  payload Json
-  createdAt DateTime @default(now())
-
+model Event {
+  id         String     @id @db.Uuid
+  type       String
+  payload    Json
+  createdAt  DateTime   @default(now())
   deliveries Delivery[] @relation("EventRelation")
+
   @@index([type])
 }
-model Subscription{
-  id  String @id @db.Uuid
-  callbackUrl String @db.Text
-  status  SubscriptionStatus
-  type String[]
-  createdAt DateTime @default(now())
-  secret String @db.Text
-  updatedAt DateTime @updatedAt
+
+model Subscription {
+  id          String             @id @db.Uuid
+  callbackUrl String
+  status      SubscriptionStatus
+  type        String[]
+  createdAt   DateTime           @default(now())
+  secret      String
+  updatedAt   DateTime           @updatedAt
+  delivery    Delivery[]         @relation("DeliveryRelation")
+
   @@index([status])
   @@index([callbackUrl])
-
-  delivery Delivery[] @relation("DeliveryRelation")
 }
-model Delivery{
-  id String @id @db.Uuid
-  eventId String @db.Uuid
-  subscriptionId String @db.Uuid
-  status DeliveryStatus
-  retryCount Int @default(0)
-  nextRetryAt DateTime?
-  createdAt DateTime @default(now())
-  startedAt DateTime?
-  completedAt DateTime?
-  lastError String?
-  updatedAt DateTime @updatedAt
-  subscriber Subscription @relation("DeliveryRelation", fields: [subscriptionId], references: [id])
-  event Event @relation("EventRelation",fields: [eventId], references: [id])
-  attempts DeliveryAttempt[] @relation()
+
+model Delivery {
+  id             String            @id @db.Uuid
+  eventId        String            @db.Uuid
+  subscriptionId String            @db.Uuid
+  status         DeliveryStatus
+  retryCount     Int               @default(0)
+  nextRetryAt    DateTime?
+  createdAt      DateTime          @default(now())
+  startedAt      DateTime?
+  completedAt    DateTime?
+  lastError      String?
+  updatedAt      DateTime          @updatedAt
+  event          Event             @relation("EventRelation", fields: [eventId], references: [id])
+  subscriber     Subscription      @relation("DeliveryRelation", fields: [subscriptionId], references: [id])
+  attempts       DeliveryAttempt[]
+
   @@index([subscriptionId])
   @@index([status])
   @@index([nextRetryAt])
 }
-model DeliveryAttempt{
-  id String @id @db.Uuid
-  deliveryId String @db.Uuid
-  attemptNum Int
-  startedAt DateTime?
-  completedAt DateTime?
-  durationMs Int?
-  statusCode Int?
-  errorMessage String? @db.Text
-  nextRetryAt DateTime?
 
-  delivery Delivery @relation(fields: [deliveryId], references: [id])
+model DeliveryAttempt {
+  id           String    @id @db.Uuid
+  deliveryId   String    @db.Uuid
+  attemptNum   Int
+  startedAt    DateTime?
+  completedAt  DateTime?
+  durationMs   Int?
+  statusCode   Int?
+  errorMessage String?
+  nextRetryAt  DateTime?
+  delivery     Delivery  @relation(fields: [deliveryId], references: [id])
+
   @@unique([deliveryId, attemptNum])
   @@index([deliveryId])
   @@index([statusCode])
+}
+
+enum SubscriptionStatus {
+  ACTIVE   @map("active")
+  INACTIVE @map("inactive")
+}
+
+enum DeliveryStatus {
+  PENDING     @map("pending")
+  PROCESSING  @map("processing")
+  SUCCESS     @map("success")
+  RETRYING    @map("retrying")
+  DEAD_LETTER @map("dead-letter")
 }
