@@ -1,4 +1,4 @@
-import { body, validationResult } from "express-validator"
+import { body, param } from "express-validator"
 import { validateUuidV7 } from "../../utils/uuid.js"
 
 export const validateEventCreation = [
@@ -27,7 +27,7 @@ export const validateEventCreation = [
 ]
 
 export const validateEventId = [
-    body(id).exists({ values: "falsy" })
+    param("id").exists({ values: "falsy" })
         .withMessage("Event id is required").custom(value => {
             if (!validateUuidV7(value)) {
                 throw new Error("Event id must be a valid uuid V7")
