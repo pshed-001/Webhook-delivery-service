@@ -57,7 +57,7 @@ export const createEvent = async (id, type, payload) => {
             data: deliveries
         })
         logger.info({
-            message: "Delivery recirds created",
+            message: "Delivery records created",
             eventId: event.id, deliveryCount: deliveries.length
         })
         return {
