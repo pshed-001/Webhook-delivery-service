@@ -1,6 +1,6 @@
-import prisma from "../../../shared/config/prisma";
-import logger from "../../../shared/logger/logger";
-import { AppError } from "../../middleware/apperror";
+import prisma from "../../../shared/config/prisma.js";
+import logger from "../../../shared/logger/logger.js";
+import { AppError } from "../../middleware/apperror.js";
 
 export const fetchDeliveries = async (page, limit) => {
     const skip = (page - 1) * limit
@@ -70,9 +70,9 @@ export const getEventDelivery = async (id, page, limit) => {
             where: { eventId: id }
         })
     ])
-    if (!deliveries) {
+    if (deliveries.length === 0) {
         throw new AppError("Delivery(s) not found",
-            404, "Delivery(s) with the specified event id does not exists ")
+            404, "Delivery(s) with the specified event id does not exist ")
     }
     logger.info({
         message: "Delivery(s) fetched succesessfully",

@@ -1,12 +1,12 @@
 import express from "express";
 import * as deliveryCtrl from "./delivery.controller.js";
-import { validateId, validateLimit, validatePage } from "./delivery.validator";
+import { validateId, validateLimit, validatePage } from "./delivery.validator.js";
 import { generalValidationResult } from "../../middleware/generalValidator.js";
 
 const deliveryRouter = express.Router();
 
 deliveryRouter.get(
-  "/deliveries/event/:id",
+  "/event/:id",
   validateId,
   validatePage,
   validateLimit,
@@ -14,13 +14,13 @@ deliveryRouter.get(
   deliveryCtrl.getEventDelivery,
 );
 deliveryRouter.get(
-  "/deliveries/:id",
+  "/:id",
   validateId,
   generalValidationResult,
   deliveryCtrl.getSingleDelivery,
 );
 deliveryRouter.get(
-  "deliveries/",
+  "/",
   validatePage,
   validateLimit,
   generalValidationResult,

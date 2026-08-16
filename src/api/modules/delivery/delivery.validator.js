@@ -1,4 +1,5 @@
 import { body, param, query } from "express-validator";
+import { validateUuidV7 } from "../../utils/uuid.js";
 export const validatePage = [
     query("page").optional().isInt({ min: 1 }).toInt()
 ]
