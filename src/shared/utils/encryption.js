@@ -15,7 +15,6 @@ export function encrypt(plainText, algorithm, secretKey) {
         iv.toString("hex"),
         authTag.toString("hex")
     ].join(":")
-
 }
 
 export function decrypt(encrypted, algorithm, secretKey) {
