@@ -1,21 +1,37 @@
-import { body, validationResult } from "express-validator"
-import { validate, version } from "uuid"
-import "dotenv/config"
-import { AppError } from "../../middleware/apperror"
+import { body, param } from "express-validator"
+import { validateUuidV7 } from "../../utils/uuid.js"
 
-const isUuidv7 = (value) => {
-    return validate(value) && version(value) === 7
-}
-const validateEventCreation = [
+export const validateEventCreation = [
     body("id")
         .exists({ values: "falsy" })
         .withMessage("Event id is required").bail()
         .custom(value => {
-            if (!isUuidv7(value)) {
-                throw new AppError("Event id must be valid uuid v7", 400, "Invalid event id")
+            if (!validateUuidV7(value)) {
+                throw new Error("Event id must be valid uuid v7")
             }
             return true
         }),
-    body("payload").isJSON
+    body("type")
+        .exists().
+        withMessage("Event type is required").bail()
+        .isString()
+        .withMessage("Event type must be a valid string")
+        .trim()
+        .notEmpty().withMessage("Event type cannot be empty"),
+    body("payload")
+        .exists()
+        .withMessage("Event payload is required")
+        .bail()
+        .isObject().withMessage("Event payload must be a valid JSON object")
+
 ]
 
+export const validateEventId = [
+    param("id").exists({ values: "falsy" })
+        .withMessage("Event id is required").custom(value => {
+            if (!validateUuidV7(value)) {
+                throw new Error("Event id must be a valid uuid V7")
+            }
+            return true
+        })
+]
