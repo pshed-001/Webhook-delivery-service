@@ -1,6 +1,6 @@
 import { v7 as uuidV7 } from "uuid";
 import prisma from "../../../shared/config/prisma.js"
-import "dotenv/secret"
+import env from "../../../shared/config/env.js";
 import logger from "../../../shared/logger/logger.js";
 import { AppError } from "../../middleware/apperror.js";
 import { encrypt } from "../../../shared/utils/encryption.js";
@@ -8,7 +8,7 @@ import { encrypt } from "../../../shared/utils/encryption.js";
 export async function createSubscription(callbackUrl, secret, type) {
 
     const algorithm = "aes-256-gcm"
-    const secretKey = process.env.SECRET_KEY || null
+    const secretKey = env.secretKey
     if (!secretKey) {
         throw new AppError("Internal server Error", 500,
             "Encryption secret key is not present")
@@ -32,7 +32,7 @@ export async function createSubscription(callbackUrl, secret, type) {
         }
     })
     logger.info({
-        nmessage: "New subscription added to subscription",
+        message: "New subscription added to subscription",
         id: subcription.id,
         staus: "ACTIVE"
     })
@@ -79,7 +79,7 @@ export async function getSubscriptions(page, limit) {
                 page,
                 limit,
                 total,
-                totalPages: Number(total / limit)
+                totalPages: Math.ceil(total / limit)
             }
         },
 
@@ -115,9 +115,10 @@ export async function getSingleSubscription(id) {
         data: subscription
     }
 }
-
-export async function updateSubscription({ status, type, secret, callbackUrl }, id) {
+// encryption algorithm is "aes-256-gcm"
+export async function updateSubscription(data, id) {
     let updateData = {}
+    const { status, type, secret, callbackUrl } = data
     if (status !== undefined) {
         updateData.status = status
     }
@@ -125,7 +126,7 @@ export async function updateSubscription({ status, type, secret, callbackUrl }, 
         updateData.type = type
     }
     if (secret !== undefined) {
-        const secretKey = process.env.SECRET_KEY
+        const secretKey = env.secretKey
         if (!secretKey) {
             throw new AppError("Internal server error", 500,
                 "Encryption secret key is not present")
@@ -183,10 +184,22 @@ export async function deleteSubscription(id) {
             id
         }
     })
-    if (!exist) {
-        throw new AppError("Subscription does not exists", 404,
+    if (!exists) {
+        throw new AppError("Subscription does not exist", 404,
             "Specified subscription does not exist"
         )
+    }
+    const existingDelivery = await prisma.delivery.count({
+        where: {
+            subscriptionId: id,
+            status: {
+                in: ["DEAD_LETTER", "PENDING", "RETRYING", "PROCESSING"]
+            }
+        }
+    })
+    if (existingDelivery !== 0) {
+        throw new AppError("Subscription cannot be deleted because it has incompleted deliveries", 409,
+            "Cannot delete the selected subscription because there  are still unprocessed delivery attached to the subscription")
     }
     await prisma.$transaction([
         prisma.delivery.deleteMany({
@@ -202,7 +215,7 @@ export async function deleteSubscription(id) {
     ])
     logger.info({
         message: "Deleted subscription sucessfully and \
-        cleared the related delivery to the specified subscription",
+cleared the related delivery to the specified subscription",
         subscriptionId: id
     })
     return {

@@ -15,8 +15,8 @@ export async function createSubscriptionCtrl(req, res, next) {
 
 export async function getSubscriptionCtrl(req, res, next) {
     try {
-        const { page } = Number(req.query) || 1
-        const { limit } = Number(req.query) || 20
+        const page = Number(req.query.page) || 1
+        const limit = Number(req.query.limit) || 20
         const result = await subscriptionService.getSubscriptions(page, limit)
 
         res.status(200).json(result)
@@ -28,7 +28,7 @@ export async function getSubscriptionCtrl(req, res, next) {
 export async function getSingleSubscriptionCtrl(req, res, next) {
     try {
 
-        const { id } = req.param
+        const { id } = req.params
         const result = await subscriptionService.getSingleSubscription(id)
 
         res.status(200).json(result)
@@ -39,8 +39,9 @@ export async function getSingleSubscriptionCtrl(req, res, next) {
 
 export async function updateSubscriptionCtrl(req, res, next) {
     try {
-        const { id } = req.param
-        const result = await subscriptionService.updateSubscription(req.body, id)
+        const { id } = req.params
+        const result = await 
+        subscriptionService.updateSubscription(req.body, id)
 
         res.status(200).json(result)
     } catch (err) {
@@ -50,7 +51,7 @@ export async function updateSubscriptionCtrl(req, res, next) {
 
 export async function deleteSubcriptionCtrl(req, res, next) {
     try {
-        const { id } = req.param
+        const { id } = req.params
         const result = await subscriptionService.deleteSubscription(id)
 
         res.status(200).json(result)

@@ -1,9 +1,9 @@
 import { body } from "express-validator";
-import "dotenv/config";
-import { SubscriptionStatus } from "../../../shared/prisma/generated/enums";
+import env from "../../../shared/config/env.js";
 
-const isDevelopment = process.env.NODE_ENV === "development";
+const isDevelopment = env.nodeEnv === "development";
 const protocols = isDevelopment ? ["https", "http"] : ["https"];
+const subscriptionStatus = ["ACTIVE", "INACTIVE"]
 
 export const validateSubscriptionBody = [
   body("callbackUrl")
@@ -36,7 +36,7 @@ export const validateSubscriptionUpdate = [
   ,
   body("status")
     .optional()
-    .isIn(SubscriptionStatus)
+    .isIn(subscriptionStatus)
     .withMessage("Subscription status can only be active or inactive "),
   body("type")
     .optional()

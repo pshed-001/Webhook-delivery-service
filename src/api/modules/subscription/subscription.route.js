@@ -7,23 +7,23 @@ import { validateId, validateLimit, validatePage } from "../delivery/delivery.va
 
 const subscriptionRouter = express.Router()
 
-subscriptionRouter.get("/subcription",
-    validatePage, validateLimit, generalValidationResult,
-    subscriptionCtrl.getSubscriptionCtrl)
-subscriptionRouter.post("/subcription",
-    validateSubscriptionBody, generalValidationResult,
-    subscriptionCtrl.createSubscriptionCtrl)
-
-
-subscriptionRouter.patch("/subcription/:id",
+subscriptionRouter.patch("/:id",
     validateId, validateSubscriptionUpdate, generalValidationResult,
     subscriptionCtrl.updateSubscriptionCtrl)
-subscriptionRouter.delete("/subcription/:id",
+subscriptionRouter.delete("/:id",
     validateId, generalValidationResult,
     subscriptionCtrl.deleteSubcriptionCtrl)
-
-subscriptionRouter.get("/subcription/:id",
+subscriptionRouter.get("/:id",
     validateId, generalValidationResult,
     subscriptionCtrl.getSingleSubscriptionCtrl)
 
+subscriptionRouter.get("/",
+    validatePage, validateLimit, generalValidationResult,
+    subscriptionCtrl.getSubscriptionCtrl)
+
+subscriptionRouter.post("/",
+    validateSubscriptionBody, generalValidationResult,
+    subscriptionCtrl.createSubscriptionCtrl)
+
+export default subscriptionRouter
 //
