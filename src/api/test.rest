@@ -1,0 +1,57 @@
+### Testing endpoints
+
+### GET delivery for all deliveries
+GET http://localhost:8080/api/delivery?page=1&limit=5
+
+### GET delivery from specific delivery
+GET http://localhost:8080/api/delivery/01a013e5-cf0f-73b8-95b6-08b81b21bc5b
+### GET deliverry for a specific event
+GET http://localhost:8080/api/delivery/event/01a00c5b-9b18-7065-a959-914cde4e3c90?limit=05
+
+
+
+### Event routes
+### Get specific event
+GET http://localhost:8080/api/event/01a00c57-cae8-71c5-a4b0-3c52a483ca49
+
+### POST event : create event
+POST http://localhost:8080/api/event
+Content-Type: application/json
+
+{
+   "id" : "01a00c5b-9b18-7065-a959-914cde4e3c90",
+   "type" : "payment.process",
+   "payload" : {
+    "id" : "001",
+    "user" : "terminal",
+    "process" : "subscription"
+   }
+}
+
+### Subscription Endpoint
+### POST create a subscription
+POST http://localhost:8080/api/subscription
+Content-Type: application/json
+
+{
+   "callbackUrl" : "https://www.localhost/api/subscription",
+   "type" : ["payment.process", "email.generated", "email.sent", "payment.received"],
+   "secret" : "sn-12kndluoe0k-allsslnabhb8vv"
+
+}
+### GET all subscription details
+GET http://localhost:8080/api/subscription
+
+### GET single subscription
+GET http://localhost:8080/api/subscription/01a013e5-8bb6-718a-b8a9-dfb3a33fec5f
+
+
+### update a single subscription
+PATCH http://localhost:8080/api/subscription/01a013e5-8bb6-718a-b8a9-dfb3a33fec5f
+Content-Type: application/json
+
+{
+   "secret" : ""
+}
+### delete a subscription 
+DELETE http://localhost:8080/api/subscription/01a013e5-8bb6-718a-b8a9-dfb3a33fec5f

@@ -1,5 +1,5 @@
 import { createLogger, format, transports, } from "winston"
-const { combine, printf, timestamp, json, colorize } = format
+const { combine, timestamp, json } = format
 
 /*
 const defaultFormat = printf(({ level, message, timestamp, ...defaultMeta }) => {

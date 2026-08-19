@@ -1,15 +1,16 @@
 import { validationResult } from "express-validator";
+import { AppError } from "./apperror.js";
 
 export const generalValidationResult = (req, res, next) => {
-    const result = validationResult(req)
+    const validationError = validationResult(req)
 
-    if (!result.isEmpty()) {
-        const errors = result.array()
-
-        return next({
-            statusCode: 400,
-            message: errors[0].msg
-        })
+    if (!validationError.isEmpty()) {
+        return next(
+            new AppError("Request validation failed",
+                400, validationError.array(), "VALIDATION_ERROR")
+        )
     }
     next()
 }
+
+//

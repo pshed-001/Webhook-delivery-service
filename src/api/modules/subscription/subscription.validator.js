@@ -12,7 +12,7 @@ export const validateSubscriptionBody = [
     .isString()
     .withMessage("CallbackUrl must be a valid string")
     .isURL({ protocols, require_protocol: true })
-    .withMessage("The URL must be valid https://"),
+    .withMessage("The URL must be valid https url"),
   // allow HTTP during local develoment and onlky HTTPS in production
   body("type")
     .exists()
@@ -23,7 +23,8 @@ export const validateSubscriptionBody = [
     .exists()
     .withMessage("Subscription secret is required")
     .isString()
-    .withMessage("Subscription secret must be a string"),
+    .withMessage("Subscription secret must be a string")
+    .notEmpty().withMessage("Subscription secret cannot be an empty string"),
 ];
 
 export const validateSubscriptionUpdate = [
@@ -45,5 +46,6 @@ export const validateSubscriptionUpdate = [
   body("secret")
     .optional()
     .isString()
-    .withMessage("Subscription secret must be a string"),
+    .withMessage("Subscription secret must be a string")
+    .notEmpty().withMessage("Subscription secret cannot be an empty string"),
 ];

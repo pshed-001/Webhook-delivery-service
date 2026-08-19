@@ -1,14 +1,6 @@
 import  {  randomBytes } from "crypto"
 import { createCipheriv, createDecipheriv } from "crypto"
-import "dotenv/config"
-/*
-const algorithm = process.env.ENCRYPTION_ALGORITHM ?
-    process.env.ENCRYPTION_ALGORITHM : ""
 
-const secretKey = Buffer.from(process.env.SECRET_KEY, "hex") || ""
-if(!secretKey){
-    throw new Error("SECRET_KEY IS MISSING")
-}*/
 export function encrypt(plainText, algorithm, secretKey) {
     const iv = randomBytes(12)
     const cipher = createCipheriv(algorithm, secretKey, iv)

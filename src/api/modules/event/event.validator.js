@@ -12,7 +12,7 @@ export const validateEventCreation = [
             return true
         }),
     body("type")
-        .exists.
+        .exists().
         withMessage("Event type is required").bail()
         .isString()
         .withMessage("Event type must be a valid string")

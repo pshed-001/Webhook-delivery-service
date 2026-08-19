@@ -50,7 +50,7 @@ export const createEvent = async (id, type, payload) => {
             id: uuidV7(),
             eventId: event.id,
             subscriptionId: subscription.id,
-            status: " PENDING",
+            status: "PENDING",
             retryCount: 0
         }))
         const delivery = await tx.delivery.createMany({
