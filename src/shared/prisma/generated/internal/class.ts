@@ -23,7 +23,7 @@ const config: runtime.GetPrismaClientConfig = {
       "value": "prisma-client"
     },
     "output": {
-      "value": "C:\\Users\\WINDOWS\\Documents\\WEB PROJECTS\\webhook_delivery_service\\src\\shared\\prisma\\generated",
+      "value": "/home/pshed-001/Documents/webhook_delivery_service/src/shared/prisma/generated",
       "fromEnvVar": null
     },
     "config": {
@@ -32,12 +32,12 @@ const config: runtime.GetPrismaClientConfig = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "windows",
+        "value": "debian-openssl-3.0.x",
         "native": true
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\WINDOWS\\Documents\\WEB PROJECTS\\webhook_delivery_service\\prisma\\schema.prisma",
+    "sourceFilePath": "/home/pshed-001/Documents/webhook_delivery_service/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativePath": "../../../../prisma",
@@ -47,7 +47,7 @@ const config: runtime.GetPrismaClientConfig = {
     "db"
   ],
   "activeProvider": "postgresql",
-  "postinstall": false,
+  "postinstall": true,
   "inlineDatasources": {
     "db": {
       "url": {
@@ -56,8 +56,8 @@ const config: runtime.GetPrismaClientConfig = {
       }
     }
   },
-  "inlineSchema": "generator client {\n  provider = \"prisma-client\"\n  output   = \"../src/shared/prisma/generated\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Event {\n  id         String     @id @db.Uuid\n  type       String\n  payload    Json\n  createdAt  DateTime   @default(now())\n  deliveries Delivery[] @relation(\"EventRelation\")\n\n  @@index([type])\n}\n\nmodel Subscription {\n  id          String             @id @db.Uuid\n  callbackUrl String\n  status      SubscriptionStatus\n  type        String[]\n  createdAt   DateTime           @default(now())\n  secret      String\n  updatedAt   DateTime           @updatedAt\n  delivery    Delivery[]         @relation(\"DeliveryRelation\")\n\n  @@index([status])\n  @@index([callbackUrl])\n}\n\nmodel Delivery {\n  id             String            @id @db.Uuid\n  eventId        String            @db.Uuid\n  subscriptionId String            @db.Uuid\n  status         DeliveryStatus\n  retryCount     Int               @default(0)\n  nextRetryAt    DateTime?\n  createdAt      DateTime          @default(now())\n  startedAt      DateTime?\n  completedAt    DateTime?\n  lastError      String?\n  updatedAt      DateTime          @updatedAt\n  event          Event             @relation(\"EventRelation\", fields: [eventId], references: [id])\n  subscriber     Subscription      @relation(\"DeliveryRelation\", fields: [subscriptionId], references: [id])\n  attempts       DeliveryAttempt[]\n\n  @@index([subscriptionId])\n  @@index([status])\n  @@index([nextRetryAt])\n}\n\nmodel DeliveryAttempt {\n  id           String    @id @db.Uuid\n  deliveryId   String    @db.Uuid\n  attemptNum   Int\n  startedAt    DateTime?\n  completedAt  DateTime?\n  durationMs   Int?\n  statusCode   Int?\n  errorMessage String?\n  nextRetryAt  DateTime?\n  delivery     Delivery  @relation(fields: [deliveryId], references: [id])\n\n  @@unique([deliveryId, attemptNum])\n  @@index([deliveryId])\n  @@index([statusCode])\n}\n\nenum SubscriptionStatus {\n  ACTIVE   @map(\"active\")\n  INACTIVE @map(\"inactive\")\n}\n\nenum DeliveryStatus {\n  PENDING     @map(\"pending\")\n  PROCESSING  @map(\"processing\")\n  SUCCESS     @map(\"success\")\n  RETRYING    @map(\"retrying\")\n  DEAD_LETTER @map(\"dead-letter\")\n}\n",
-  "inlineSchemaHash": "0aaf6675b9618774b33f58347d6cfb4a7d00decc0fe52b6110a267b1be227023",
+  "inlineSchema": "generator client {\n  provider = \"prisma-client\"\n  output   = \"../src/shared/prisma/generated\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Event {\n  id         String     @id @unique @db.Uuid\n  type       String\n  payload    Json\n  createdAt  DateTime   @default(now())\n  deliveries Delivery[] @relation(\"EventRelation\")\n\n  @@index([type])\n}\n\nmodel Subscription {\n  id          String             @id @unique @db.Uuid\n  callbackUrl String\n  status      SubscriptionStatus\n  type        String[]\n  createdAt   DateTime           @default(now())\n  secret      String\n  updatedAt   DateTime           @updatedAt\n  delivery    Delivery[]         @relation(\"DeliveryRelation\")\n\n  @@index([status])\n  @@index([callbackUrl])\n}\n\nmodel Delivery {\n  id             String            @id @unique @db.Uuid\n  eventId        String            @db.Uuid\n  subscriptionId String            @db.Uuid\n  status         DeliveryStatus\n  retryCount     Int               @default(0)\n  nextRetryAt    DateTime?\n  createdAt      DateTime          @default(now())\n  startedAt      DateTime?\n  completedAt    DateTime?\n  lastError      String?\n  updatedAt      DateTime          @updatedAt\n  event          Event             @relation(\"EventRelation\", fields: [eventId], references: [id])\n  subscriber     Subscription      @relation(\"DeliveryRelation\", fields: [subscriptionId], references: [id])\n  attempts       DeliveryAttempt[]\n\n  @@index([subscriptionId])\n  @@index([status])\n  @@index([nextRetryAt])\n}\n\nmodel DeliveryAttempt {\n  id           String    @id @unique @db.Uuid\n  deliveryId   String    @db.Uuid\n  attemptNum   Int\n  startedAt    DateTime?\n  completedAt  DateTime?\n  durationMs   Int?\n  statusCode   Int?\n  errorMessage String?\n  nextRetryAt  DateTime?\n  delivery     Delivery  @relation(fields: [deliveryId], references: [id])\n\n  @@unique([deliveryId, attemptNum])\n  @@index([deliveryId])\n  @@index([statusCode])\n}\n\nenum SubscriptionStatus {\n  ACTIVE   @map(\"active\")\n  INACTIVE @map(\"inactive\")\n}\n\nenum DeliveryStatus {\n  PENDING     @map(\"pending\")\n  PROCESSING  @map(\"processing\")\n  SUCCESS     @map(\"success\")\n  RETRYING    @map(\"retrying\")\n  DEAD_LETTER @map(\"dead-letter\")\n}\n",
+  "inlineSchemaHash": "2f69778a6e400671150fa7e6fd0dfe8cfc9095555261e54b487356318bb11e18",
   "copyEngine": true,
   "runtimeDataModel": {
     "models": {},

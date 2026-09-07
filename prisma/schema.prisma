@@ -9,7 +9,7 @@ datasource db {
 }
 
 model Event {
-  id         String     @id @db.Uuid
+  id         String     @id @db.Uuid @unique
   type       String
   payload    Json
   createdAt  DateTime   @default(now())
@@ -19,7 +19,7 @@ model Event {
 }
 
 model Subscription {
-  id          String             @id @db.Uuid
+  id          String             @id @db.Uuid @unique
   callbackUrl String
   status      SubscriptionStatus
   type        String[]
@@ -33,7 +33,7 @@ model Subscription {
 }
 
 model Delivery {
-  id             String            @id @db.Uuid
+  id             String            @id @db.Uuid @unique
   eventId        String            @db.Uuid
   subscriptionId String            @db.Uuid
   status         DeliveryStatus
@@ -54,7 +54,7 @@ model Delivery {
 }
 
 model DeliveryAttempt {
-  id           String    @id @db.Uuid
+  id           String    @id @db.Uuid @unique
   deliveryId   String    @db.Uuid
   attemptNum   Int
   startedAt    DateTime?

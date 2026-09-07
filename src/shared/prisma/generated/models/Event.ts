@@ -190,7 +190,7 @@ export type EventWhereUniqueInput = Prisma.AtLeast<{
   payload?: Prisma.JsonFilter<"Event">
   createdAt?: Prisma.DateTimeFilter<"Event"> | Date | string
   deliveries?: Prisma.DeliveryListRelationFilter
-}, "id">
+}, "id" | "id">
 
 export type EventOrderByWithAggregationInput = {
   id?: Prisma.SortOrder

@@ -287,7 +287,7 @@ export type DeliveryAttemptWhereUniqueInput = Prisma.AtLeast<{
   errorMessage?: Prisma.StringNullableFilter<"DeliveryAttempt"> | string | null
   nextRetryAt?: Prisma.DateTimeNullableFilter<"DeliveryAttempt"> | Date | string | null
   delivery?: Prisma.XOR<Prisma.DeliveryScalarRelationFilter, Prisma.DeliveryWhereInput>
-}, "id" | "deliveryId_attemptNum">
+}, "id" | "id" | "deliveryId_attemptNum">
 
 export type DeliveryAttemptOrderByWithAggregationInput = {
   id?: Prisma.SortOrder

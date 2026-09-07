@@ -220,7 +220,7 @@ export type SubscriptionWhereUniqueInput = Prisma.AtLeast<{
   secret?: Prisma.StringFilter<"Subscription"> | string
   updatedAt?: Prisma.DateTimeFilter<"Subscription"> | Date | string
   delivery?: Prisma.DeliveryListRelationFilter
-}, "id">
+}, "id" | "id">
 
 export type SubscriptionOrderByWithAggregationInput = {
   id?: Prisma.SortOrder

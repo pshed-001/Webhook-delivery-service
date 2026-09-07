@@ -304,7 +304,7 @@ export type DeliveryWhereUniqueInput = Prisma.AtLeast<{
   event?: Prisma.XOR<Prisma.EventScalarRelationFilter, Prisma.EventWhereInput>
   subscriber?: Prisma.XOR<Prisma.SubscriptionScalarRelationFilter, Prisma.SubscriptionWhereInput>
   attempts?: Prisma.DeliveryAttemptListRelationFilter
-}, "id">
+}, "id" | "id">
 
 export type DeliveryOrderByWithAggregationInput = {
   id?: Prisma.SortOrder

@@ -1,10 +1,12 @@
 ### Testing endpoints
 
 ### GET delivery for all deliveries
-GET http://localhost:8080/api/delivery?page=1&limit=5
+GET http://localhost:8080/api/delivery?
 
 ### GET delivery from specific delivery
 GET http://localhost:8080/api/delivery/01a013e5-cf0f-73b8-95b6-08b81b21bc5b
+
+
 ### GET deliverry for a specific event
 GET http://localhost:8080/api/delivery/event/01a00c5b-9b18-7065-a959-914cde4e3c90?limit=05
 
@@ -19,8 +21,8 @@ POST http://localhost:8080/api/event
 Content-Type: application/json
 
 {
-   "id" : "01a00c5b-9b18-7065-a959-914cde4e3c90",
-   "type" : "payment.process",
+   "id" :"01a0714a-d803-7640-90bb-09d42c11ea2d",
+   "type" : "email.generated",
    "payload" : {
     "id" : "001",
     "user" : "terminal",

@@ -6,6 +6,7 @@ import { v7 as uuidV7 } from "uuid";
 import prisma from "../../../shared/config/prisma.js"
 import { AppError } from "../../middleware/apperror.js";
 import logger from "../../../shared/logger/logger.js";
+import { deliveryProducer } from "../../../shared/producer.js";
 
 async function checkExistingEvent(id) {
     const existingEvent = await prisma.event.findUnique({
@@ -19,56 +20,67 @@ async function checkExistingEvent(id) {
     return { exists: false, data: null }
 }
 export const createEvent = async (id, type, payload) => {
-    const existingEvent = await checkExistingEvent(id)
-    if (existingEvent.exists) {
-        throw new AppError("Event already exists", 409, "Duplcate event id")
-    }
-    const cr = await prisma.$transaction(async (tx) => {
-        const subscriptions = await tx.subscription.findMany({
-            where: {
-                type: {
-                    has: type
-                },
-                status: "ACTIVE"
+    try {
+        const cr = await prisma.$transaction(async (tx) => {
+            const subscriptions = await tx.subscription.findMany({
+                where: {
+                    type: {
+                        has: type
+                    },
+                    status: "ACTIVE"
+                }
+            })
+            if (subscriptions.length === 0) {
+                throw new AppError("No subscriber to process this event",
+                    409, "No active subscriber for event type"
+                )
             }
-        })
-        if (subscriptions.length === 0) {
-            throw new AppError("No subscriber to process this event",
-                404, "No active subscriber for event type"
-            )
-        }
-        const event = await tx.event.create({
-            data: {
-                id, type, payload
+            const event = await tx.event.create({
+                data: {
+                    id, type, payload
+                }
+            })
+
+            const deliveries = subscriptions.map(subscription => ({
+                id: uuidV7(),
+                eventId: event.id,
+                subscriptionId: subscription.id,
+                status: "PENDING",
+                retryCount: 0
+            }))
+            const delivery = await tx.delivery.createMany({
+                data: deliveries
+            })
+
+            return {
+                event, deliveryCount: deliveries.length, deliveries
             }
+
+
         })
         logger.info({
             message: "Event created successfully",
-            id: event.id, activity: "event creation"
-        })
-        const deliveries = subscriptions.map(subscription => ({
-            id: uuidV7(),
-            eventId: event.id,
-            subscriptionId: subscription.id,
-            status: "PENDING",
-            retryCount: 0
-        }))
-        const delivery = await tx.delivery.createMany({
-            data: deliveries
+            id: cr.event.id, activity: "event creation"
         })
         logger.info({
             message: "Delivery records created",
-            eventId: event.id, deliveryCount: deliveries.length
+            eventId: cr.event.id, deliveryCount: cr.deliveries.length
         })
+
+        await deliveryProducer(cr.deliveries)
+
         return {
-            event, deliveryCount: deliveries.length
+            success: true,
+            message: "Event accepted for delivery",
+            data: cr
         }
-    })
-    
-    return {
-        success: true,
-        message: "Event accepted for delivery",
-        data : cr
+    } catch (err) {
+        logger.error({
+            message: "Error encountered during event creation",
+            info: err.stack,
+            errMessage: err.message
+        })
+        throw err
     }
 }
 
@@ -79,9 +91,10 @@ export const fetchEvent = async (id) => {
     }
     logger.info({ message: "Event retrieved successfully", eventId: event.data.id })
     return {
-        success : true, 
-        message : "Event retrieved successfully",
-        data : event.data
+        success: true,
+        message: "Event retrieved successfully",
+        data: event.data
     }
 }
+
 // finished it current activity for v1
