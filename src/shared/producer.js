@@ -1,9 +1,10 @@
 import logger from "./logger/logger.js";
 import { connection } from "./utils/redisconnect.js";
 import { Queue } from "bullmq"
+import { getDeliveryId } from "./utils/secret.js";
 
 const deliveryQueue = new Queue("Delivery Queue", {
-    connection,
+    connection: connection,
     defaultJobOptions: {
         removeOnComplete: {
             count: 5000,
@@ -14,12 +15,13 @@ const deliveryQueue = new Queue("Delivery Queue", {
             age: 60 * 60 * 24 * 7
         }
     }
-})
+});
 
-async function deliveryProducer(deliveries) {
+async function deliveryProducer(deliveries, immediate = true) {
 
     const item = Array.isArray(deliveries) ? deliveries
         : deliveries ? [deliveries] : []
+
     if (item.length === 0) {
         logger.warn({
             message: "Delivery with no content received",
@@ -27,15 +29,20 @@ async function deliveryProducer(deliveries) {
         })
         return;
     }
+
     try {
         await deliveryQueue.addBulk(
-            deliveries.map(delivery => ({
-                name: "Delivery", delivery
+            item.map(delivery => ({
+                name: "Delivery",
+                data: delivery,
+                opts: {
+                    jobId: getDeliveryId(delivery)
+                }
             })
             ))
         logger.info({
             message: "Deliveries added to queue successfully",
-            deliveryLength: deliveries.length
+            deliveryLength: item.length
         })
     } catch (err) {
         logger.error({
@@ -47,4 +54,4 @@ async function deliveryProducer(deliveries) {
     }
 }
 
-export { deliveryProducer }
+export { deliveryProducer, deliveryQueue }

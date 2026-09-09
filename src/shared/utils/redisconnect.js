@@ -13,9 +13,8 @@ const redisConnection = createClient({
                     message: "Redis max retry attempt reached.",
                     activity: "Redis connection initailization",
                 })
-                return new Error("Redis maximum connection reached")
             }
-            const delay = 1000 * Math.pow(2, retries)
+            const delay = Math.min(1000 * Math.pow(2, retries), 30000)
             logger.info({
                 message: `Redis connection failed. Next retry attempt in ${delay / 1000}`,
             })
@@ -34,7 +33,7 @@ function connect() {
     })
     connection.on("error", (err) => {
         logger.error({
-            mesage: "Redis connection failed ",
+            message: "Redis connection failed ",
             info: err
         })
     })

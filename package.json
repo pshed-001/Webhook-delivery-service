@@ -4,8 +4,8 @@
   "description": "A webhook delivery standalone microservice for delivering or sending payload and request to external subscribers endpoint or other endpoint based on the event type .",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node --watch src/api/server.js"
+    "dev": "node --watch src/api/server.js",
+    "start": "npx prisma migrate && node src/api/server.js"
   },
   "repository": {
     "type": "git",
@@ -28,7 +28,7 @@
     "express": "^5.2.1",
     "express-validator": "^7.3.2",
     "helmet": "^8.3.0",
-    "pg": "^8.22.0",
+    "pg": "^8.23.0",
     "prisma": "^6.19.3",
     "redis": "^6.2.1",
     "uuid": "^14.0.2",
@@ -36,5 +36,9 @@
   },
   "overrides": {
     "deepmerge-ts": "^8.0.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2"
   }
 }
