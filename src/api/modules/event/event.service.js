@@ -69,7 +69,7 @@ export const createEvent = async (id, type, payload) => {
 
         await deliveryProducer(cr.deliveries).catch(err => {
             logger.error({
-                message: "Failed to enqueue deliveries, daemon will retry",
+                message: "Failed to queue deliveries, daemon will retry",
                 eventId: cr.event.id,
                 info: err.stack,
             })

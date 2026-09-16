@@ -14,15 +14,15 @@
 // next layer is to check the queue if the delivery is already present
 //get your queue, get the data, check if your deliveries are there in the queue 
 // irrespective of their state. If yes proceed , else add to the queue
-import prisma from "../shared/config/prisma.js"
-import logger from "../shared/logger/logger.js"
-import { deliveryProducer, deliveryQueue } from "../shared/producer.js"
-import { getDeliveryId } from "../shared/utils/secret.js"
+import prisma from "../../shared/config/prisma.js"
+import logger from "../../shared/logger/logger.js"
+import { deliveryProducer, deliveryQueue } from "../../shared/producer.js"
+import { getDeliveryId } from "../../shared/utils/secret.js"
 
 export async function findPendingDeliveries() {
     try {
         // calculate time difference
-        const tenMinutes = 10 * 60 * 1000
+        const tenMinutes = 1 * 60 * 1000
         const deliveryCutOff = new Date(Date.now() - tenMinutes)
 
         // query the database for pending deliveries within 10min
@@ -53,13 +53,14 @@ export async function findPendingDeliveries() {
             })
             return;
         }
-
+        // console.log("Pending Deliveries:", pendingDeliveries)
         // for each delivery found, genenrate the id and check if it already exist
         const jobs = await Promise.all(
             pendingDeliveries.map(delivery =>
                 deliveryQueue.getJob(getDeliveryId(delivery)))
         )
-        const jobsToAdd = pendingDeliveries.filter((_, i) => jobs[i] === null)
+        // console.log("Jobs in Queue:", jobs)
+        const jobsToAdd = pendingDeliveries.filter((_, i) => jobs[i] === null ||jobs[i] === undefined)
         if (jobsToAdd.length < pendingDeliveries.length) {
             logger.info({
                 message: "Some deliveries are already in queue",
@@ -85,3 +86,4 @@ export async function findPendingDeliveries() {
 }
 
 await findPendingDeliveries()
+// done and tested: PEACE OUT!

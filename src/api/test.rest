@@ -21,7 +21,7 @@ POST http://localhost:8080/api/event
 Content-Type: application/json
 
 {
-   "id" :"01a0714a-d803-7640-90bb-09d42c11ea2d",
+   "id" :"01a08f74-a4f0-7266-8e8f-623f58fdc892",
    "type" : "email.generated",
    "payload" : {
     "id" : "001",
@@ -36,8 +36,19 @@ POST http://localhost:8080/api/subscription
 Content-Type: application/json
 
 {
-   "callbackUrl" : "https://www.localhost/api/subscription",
+   "callbackUrl" : "http://www.localhost/api/subscription",
    "type" : ["payment.process", "email.generated", "email.sent", "payment.received"],
+   "secret" : "sn-12kndluoe0k-allsslnabhb8vv"
+
+}
+
+### POST create a subscription
+POST http://localhost:8080/api/subscription
+Content-Type: application/json
+
+{
+   "callbackUrl" : "http://www.mcu.edu.ng",
+   "type" : ["invoice.generated", "invoice.sent", "invoice.paid"],
    "secret" : "sn-12kndluoe0k-allsslnabhb8vv"
 
 }
@@ -53,7 +64,7 @@ PATCH http://localhost:8080/api/subscription/01a013e5-8bb6-718a-b8a9-dfb3a33fec5
 Content-Type: application/json
 
 {
-   "secret" : ""
+   "secret" : "hello"
 }
 ### delete a subscription 
 DELETE http://localhost:8080/api/subscription/01a013e5-8bb6-718a-b8a9-dfb3a33fec5f

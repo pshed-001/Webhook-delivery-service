@@ -3,7 +3,7 @@ import { connection } from "./utils/redisconnect.js";
 import { Queue } from "bullmq"
 import { getDeliveryId } from "./utils/secret.js";
 
-const deliveryQueue = new Queue("Delivery Queue", {
+const deliveryQueue = new Queue("Delivery_Queue", {
     connection: connection,
     defaultJobOptions: {
         removeOnComplete: {

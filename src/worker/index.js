@@ -33,11 +33,11 @@ const BATCH_SIZE = 50
 const MAX_QUEUE = 100
 
 /*
-2. Delivery scheduler
-Query pending/due deliveries
+2. Delivery scheduler ✅
+Query pending/due deliveries ✅
 Batch/limit handling
-Prevent duplicate claiming
-Move claimed deliveries toward the queue
+Prevent duplicate claiming ✅
+Move claimed deliveries toward the queue ✅
 3. Redis queue
 Define the delivery job structure
 Add jobs

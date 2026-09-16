@@ -12,3 +12,8 @@ export function getDeliveryId(delivery) {
         .digest("hex").slice(0, 16)
 }
 //
+export function createHmacSignature(secret, payload) {
+    const hmac = crypto.createHmac("sha256", secret)
+    hmac.update(payload)
+    return hmac.digest("hex")
+}
