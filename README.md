@@ -1,4 +1,3 @@
-=======
 # Webhook Delivery Service
 
 A standalone **webhook delivery microservice**. It accepts events from a producing system, matches them against registered subscriber endpoints, and is designed to deliver each matching event to its subscribers over HTTP — with retries, attempt tracking, and dead-lettering for failed deliveries.
@@ -233,4 +232,3 @@ No automated test suite exists yet (`npm test` is a placeholder).
 ## Author
 
 **pshed-001** — [github.com/pshed-001](https://github.com/pshed-001)
->>>>>>> 586d8375243e9fcb460a8a3fafe3caff7ae397f4
