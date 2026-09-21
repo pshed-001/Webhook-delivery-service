@@ -1,7 +1,7 @@
 // Database operation that updates the delivery 
 // after been picked up by the worker and 
 // also register the delivery attempt.
-
+                          
 import prisma from "../../../shared/config/prisma.js";
 import logger from "../../../shared/logger/logger.js";
 import { v7 as uuidV7 } from "uuid";
@@ -30,7 +30,7 @@ async function updateDelivery(deliveryData) {
                     startedAt: true
                 }
             })
-            const deliveryAttempt = await prisma.deliveryAttempt.create({
+            const deliveryAttempt = await tx.deliveryAttempt.create({
                 data: {
                     id: uuidV7(),
                     deliveryId: deliveryData.id,
@@ -76,7 +76,7 @@ async function updateDeliveryAttempt(deliveryData) {
     try {
 
     } catch (err) {
-        logger.eror({
+        logger.error({
             message: ""
         })
     }

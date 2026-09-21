@@ -4,6 +4,7 @@ import env from "../../../shared/config/env.js";
 import { decrypt } from "../../../shared/utils/encryption.js";
 import { createHmacSignature } from "../../../shared/utils/secret.js";
 import logger from "../../../shared/config/logger.js";
+import { axiosReq } from "./axiosReq.js";
 
 // function to process the delivery that will be called by the worker
 async function processDelivery(deliveryData) {
@@ -48,7 +49,6 @@ async function processDelivery(deliveryData) {
             logger.error({
                 message: `Subscription with ID ${data.subscriptionId} not found`,
                 delivery: deliveryData
-
             })
             throw new Error(`Subscription with ID ${data.subscriptionId} not found`);
         }
@@ -57,9 +57,10 @@ async function processDelivery(deliveryData) {
         // decrypt the subscription secret
         const decryptedSecret = decrypt(subscription.secret, "aes-256-gcm", env.ENCRYPTION_KEY);
         // create the hmac signature for teh request header
-        const signature = createHmacSignature(decryptedSecret, JSON.stringify(event.payload));
+        const signature = createHmacSignature(decryptedSecret, JSON.stringify(event));
 
         // now build a request to send to the subscription callback url using axios
+        const request = await axiosReq(subscription.callbackUrl, event, signature)
 
     } catch (error) {
         throw new Error(`Error processing delivery: ${error.message}`);
