@@ -1,10 +1,32 @@
-import { updateDelivery } from "./updateDelivery";
+import { updateDelivery, updateDeliveryAttempt } from "./updateDelivery.js";
 import prisma from "../../../shared/config/prisma.js";
 import env from "../../../shared/config/env.js";
 import { decrypt } from "../../../shared/utils/encryption.js";
 import { createHmacSignature } from "../../../shared/utils/secret.js";
-import logger from "../../../shared/config/logger.js";
+import logger from "../../../shared/logger/logger.js";
 import { axiosReq } from "./axiosReq.js";
+
+export function classifyResponse(request) {
+    if (request.success && request.status >= 200 && request.status < 300) {
+        return "SUCCESS"// manages 2xx response code
+    }
+    const retryCodes = [409, 429, 500, 501, 502, 503, 504]
+    if (retryCodes.includes(request.status)) {
+        return "RETRY"
+    }
+    if (request.status >= 400 && request.status < 500) {
+        return "DEAD_LETTER"
+    }
+    if (request.status >= 500) {
+        return "RETRY"
+    }
+    const retryType = ["TIMEOUT", "ENOTFOUND", "EAI_AGAIN", "ECONNREFUSED", "ECONNRESET"]
+    if (retryType.includes(request.type)) {
+        return "RETRY"
+    }
+
+    return "NON_AXIOS_ERROR"
+}
 
 // function to process the delivery that will be called by the worker
 async function processDelivery(deliveryData) {
@@ -61,6 +83,63 @@ async function processDelivery(deliveryData) {
 
         // now build a request to send to the subscription callback url using axios
         const request = await axiosReq(subscription.callbackUrl, event, signature)
+        const date = Date.now()
+        logger.info({
+            message: "Delivery request completed",
+            status: request.status,
+            success: request.success,
+            type: request.type ?? null
+        });
+
+        // classify the response
+        const response = classifyResponse(request)
+        const attemptId = delivery.deliveryAttempt.id
+        let statusCode;
+        let nextRetryAt;
+        let errorMessage;
+        if (response === "SUCCESS") {
+            statusCode = request?.status
+        }
+        if(response === "RETRY"){
+            statusCode = request?.status
+            errorMessage = request?.error   
+        }
+        if(response === "DEAD_LETTER"){
+
+        }
+        if(response === "NON_AXIOS_ERROR"){
+
+        }
+
+        const updateDelAttempt = await
+            updateDeliveryAttempt(attemptId, date, statusCode, errorMessage, nextRetryAt)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     } catch (error) {
         throw new Error(`Error processing delivery: ${error.message}`);

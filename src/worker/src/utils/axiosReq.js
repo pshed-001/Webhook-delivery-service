@@ -28,7 +28,8 @@ export async function axiosReq(callbackUrl, eventData, header, timeout = 30000) 
             status: request.status,
             data: request.data,
             headers: Object.fromEntries(Object.entries(request.headers)),
-            
+            type: null,
+            error: null
         }
 
     } catch (err) {
@@ -36,17 +37,18 @@ export async function axiosReq(callbackUrl, eventData, header, timeout = 30000) 
 
             logger.error({
                 message: "Axios request failed",
-                error: err.message,
                 status: null,
                 code: err.code,
-                stack: err.stack
+                stack: err.stack,
+                error: err.message
             })
             return {
                 success: false,
                 status: null,
                 type: err.code,
                 data: null,
-                headers: {}
+                headers: {},
+                error: err.message
             }
         }
         logger.error({

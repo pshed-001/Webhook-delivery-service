@@ -1,7 +1,7 @@
 // Database operation that updates the delivery 
 // after been picked up by the worker and 
 // also register the delivery attempt.
-                          
+
 import prisma from "../../../shared/config/prisma.js";
 import logger from "../../../shared/logger/logger.js";
 import { v7 as uuidV7 } from "uuid";
@@ -23,8 +23,8 @@ async function updateDelivery(deliveryData) {
                 },
                 select: {
                     id: true,
-                    eventId : true,
-                    subscriptionId : true,
+                    eventId: true,
+                    subscriptionId: true,
                     status: true,
                     retryCount: true,
                     startedAt: true
@@ -71,16 +71,40 @@ async function updateDelivery(deliveryData) {
 }
 
 
-async function updateDeliveryAttempt(deliveryData) {
-
+async function updateDeliveryAttempt(attemptId, completedAt, statusCode = null, errorMessage = null, nextRetryAt = null) {
     try {
-
+        const delAttempt = await prisma.deliveryAttempt.findUnique({
+            where: {
+                id: attemptId
+            },
+            select: {
+                startedAt: true
+            }
+        })
+        if (!delAttempt) {
+            throw new Error(`DeliveryAttempt ${attemptId} not found`)
+        }
+        const durationMs =
+            completedAt - delAttempt.startedAt.getTime()
+        const d = new Date(completedAt)
+        const updatedAttempt = await prisma.deliveryAttempt.update({
+            where: {
+                id: attemptId
+            },
+            data: {
+                statusCode, completedAt: d, errorMessage, nextRetryAt, durationMs
+            }
+        })
+        return updatedAttempt
     } catch (err) {
         logger.error({
-            message: ""
+            message: "Unable to update delivery attempt",
+            errorMessage: err.message,
+            stack: err.stack
         })
+        throw err
     }
 }
 
 
-export { updateDelivery };
+export { updateDelivery, updateDeliveryAttempt };
