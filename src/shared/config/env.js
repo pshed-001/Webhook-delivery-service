@@ -23,7 +23,9 @@ const env = {
     databaseUrl: process.env.DATABASE_URL,
     secretKey: process.env.SECRET_KEY,
     encryptionAlgorithm: process.env.ENCRYPTION_ALGORITHM,
-    redisUrl : process.env.REDIS_URL,
-    redisMaxRetries : process.env.REDIS_MAX_RETRIES
+    redisUrl: process.env.REDIS_URL,
+    redisMaxRetries: process.env.REDIS_MAX_RETRIES,
+    deliveryMaxRetries: process.env.DELIVERY_MAX_RETRIES,
+    deliveryBaseDelay: process.env.DELIVERY_BASE_DELAY
 }
 export default env

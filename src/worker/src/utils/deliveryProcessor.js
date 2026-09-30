@@ -5,6 +5,7 @@ import { decrypt } from "../../../shared/utils/encryption.js";
 import { createHmacSignature } from "../../../shared/utils/secret.js";
 import logger from "../../../shared/logger/logger.js";
 import { axiosReq } from "./axiosReq.js";
+import { computeNextRetry, parseRetryAfter } from "./workerHelpers.js";
 
 export function classifyResponse(request) {
     if (request.success && request.status >= 200 && request.status < 300) {
@@ -77,7 +78,7 @@ async function processDelivery(deliveryData) {
         // update the delivery and create the delivery attempt 
         const delivery = await updateDelivery(deliveryData);
         // decrypt the subscription secret
-        const decryptedSecret = decrypt(subscription.secret, "aes-256-gcm", env.ENCRYPTION_KEY);
+        const decryptedSecret = decrypt(subscription.secret, "aes-256-gcm", env.secretKey);
         // create the hmac signature for teh request header
         const signature = createHmacSignature(decryptedSecret, JSON.stringify(event));
 
@@ -93,36 +94,50 @@ async function processDelivery(deliveryData) {
 
         // classify the response
         const response = classifyResponse(request)
+        // compute the parameters needed to updtae the delivery attempt
+
+        //delivery attempt id
         const attemptId = delivery.deliveryAttempt.id
+
         let statusCode;
         let nextRetryAt;
         let errorMessage;
-        if (response === "SUCCESS") {
-            statusCode = request?.status
+        let status = "RETRYING";
+        switch (response) {
+            case "SUCCESS":
+                statusCode = request?.status
+                status = "SUCCESS"
+                break;
+            case "DEAD_LETTER":
+                statusCode = request?.status
+                errorMessage = request?.error
+                status = "DEAD_LETTER"
+                break;
+            case "RETRY":
+                statusCode = request?.status
+                errorMessage = request?.error
+
+                if (request?.status === 429 && "retry-after" in request?.headers) {
+                    nextRetryAt = parseRetryAfter(request?.headers["retry-after"])
+                }
+                if (!nextRetryAt) {
+                    nextRetryAt = computeNextRetry(delivery.deliveryAttempt.attemptNum, env.deliveryBaseDelay)
+                }
+                break;
+            default:
+                errorMessage = request?.error
         }
-        if(response === "RETRY"){
-            statusCode = request?.status
-            errorMessage = request?.error   
-        }
-        if(response === "DEAD_LETTER"){
 
-        }
-        if(response === "NON_AXIOS_ERROR"){
+        const updateAttempt = await updateDeliveryAttempt(attemptId, date, statusCode, errorMessage, nextRetryAt)
 
-        }
-
-        const updateDelAttempt = await
-            updateDeliveryAttempt(attemptId, date, statusCode, errorMessage, nextRetryAt)
-
-
-
-
-
-
-
-
-
-
+        const updateDel = await prisma.delivery.update({
+            where: {
+                id: delivery.updatedDelivery.id
+            },
+            data: {
+                status, nextRetryAt, lastError: errorMessage
+            }
+        })
 
 
 
