@@ -1,7 +1,7 @@
 ### Testing endpoints
 
 ### GET delivery for all deliveries
-GET http://localhost:8080/api/delivery?
+GET http://localhost:8080/api/delivery?page=1&limit=8
 
 ### GET delivery from specific delivery
 GET http://localhost:8080/api/delivery/01a013e5-cf0f-73b8-95b6-08b81b21bc5b
@@ -21,8 +21,8 @@ POST http://localhost:8080/api/event
 Content-Type: application/json
 
 {
-   "id" :"01a08f74-a4f0-7266-8e8f-623f58fdc892",
-   "type" : "email.generated",
+   "id" :"01a0f347-1375-7704-b531-4c4db6fa4fed",
+   "type" : "admission.accepted",
    "payload" : {
     "id" : "001",
     "user" : "terminal",
@@ -36,8 +36,8 @@ POST http://localhost:8080/api/subscription
 Content-Type: application/json
 
 {
-   "callbackUrl" : "http://www.localhost/api/subscription",
-   "type" : ["payment.process", "email.generated", "email.sent", "payment.received"],
+   "callbackUrl" : "https://www.mcu.edu.ng/main",
+   "type" : ["admission.accepted"],
    "secret" : "sn-12kndluoe0k-allsslnabhb8vv"
 
 }

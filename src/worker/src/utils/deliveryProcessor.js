@@ -32,7 +32,7 @@ export function classifyResponse(request) {
 // function to process the delivery that will be called by the worker
 async function processDelivery(deliveryData) {
     try {
-        const data = deliveryData.data;
+        const data = deliveryData;
         // verify if the delivery has its relevant 
         // event  and subscription data
         const [event, subscription] = await Promise.all([
@@ -84,7 +84,7 @@ async function processDelivery(deliveryData) {
 
         // now build a request to send to the subscription callback url using axios
         const request = await axiosReq(subscription.callbackUrl, event, signature)
-        const date = Date.now()
+        const completedAtDate = Date.now()
         logger.info({
             message: "Delivery request completed",
             status: request.status,
@@ -95,10 +95,10 @@ async function processDelivery(deliveryData) {
         // classify the response
         const response = classifyResponse(request)
         // compute the parameters needed to updtae the delivery attempt
-
         //delivery attempt id
         const attemptId = delivery.deliveryAttempt.id
 
+        // update the variables needed for the update of the delivery attempt
         let statusCode;
         let nextRetryAt;
         let errorMessage;
@@ -107,16 +107,18 @@ async function processDelivery(deliveryData) {
             case "SUCCESS":
                 statusCode = request?.status
                 status = "SUCCESS"
+                nextRetryAt = null
                 break;
             case "DEAD_LETTER":
                 statusCode = request?.status
                 errorMessage = request?.error
                 status = "DEAD_LETTER"
+                nextRetryAt = null
                 break;
             case "RETRY":
                 statusCode = request?.status
                 errorMessage = request?.error
-
+                status = "RETRYING"
                 if (request?.status === 429 && "retry-after" in request?.headers) {
                     nextRetryAt = parseRetryAfter(request?.headers["retry-after"])
                 }
@@ -125,39 +127,38 @@ async function processDelivery(deliveryData) {
                 }
                 break;
             default:
+                status = "DEAD_LETTER"
                 errorMessage = request?.error
+                nextRetryAt = null
         }
 
-        const updateAttempt = await updateDeliveryAttempt(attemptId, date, statusCode, errorMessage, nextRetryAt)
-
+        // update the attempt
+        const updateAttempt = await updateDeliveryAttempt(attemptId, completedAtDate, statusCode, errorMessage, nextRetryAt)
+        logger.info({
+            message: "Delivery attempt updated successfully",
+            id: delivery.deliveryAttempt.id
+        })
+        // update the delivery itself based on the response
         const updateDel = await prisma.delivery.update({
             where: {
                 id: delivery.updatedDelivery.id
             },
             data: {
-                status, nextRetryAt, lastError: errorMessage
+                status, nextRetryAt, completedAt: new Date(completedAtDate), lastError: errorMessage
             }
         })
+        logger.info({
+            message: "Delivery status updated successfully",
+            id: delivery.updatedDelivery.id
+        })
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    } catch (error) {
-        throw new Error(`Error processing delivery: ${error.message}`);
+    } catch (err) {
+        logger.error({
+            message: "Error encountered during event delivery",
+            errorMessage: err.message,
+            stack: err.stack
+        })
+        throw new Error(`Error processing delivery: ${err.message}`);
     }
 }
 

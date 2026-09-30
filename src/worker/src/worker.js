@@ -2,6 +2,7 @@
 import { Worker } from "bullmq";
 import { connection } from "../../shared/utils/redisconnect.js"
 import logger from "../../shared/logger/logger.js";
+import { processDelivery } from "./utils/deliveryProcessor.js";
 
 const firstWorker = new Worker("Delivery_Queue", async job => {
     logger.info({
@@ -9,13 +10,8 @@ const firstWorker = new Worker("Delivery_Queue", async job => {
         jobId: job.id,
         data: job.data
     });
-
-
-
-
-
-
-    return { result: `Processed by first worker:`, data : job.data };
+    await processDelivery(job.data)
+    return { result: `Processed by first worker:`, data: job.data };
 }, { connection });
 
 const secondWorker = new Worker("Delivery_Queue", async job => {
@@ -24,9 +20,8 @@ const secondWorker = new Worker("Delivery_Queue", async job => {
         jobId: job.id,
         data: job.data
     });
-
-    
-    return { result: `Processed by second worker:`, data : job.data };
+    await processDelivery(job.data)
+    return { result: `Processed by second worker:`, data: job.data };
 }, { connection });
 
 
@@ -99,7 +94,7 @@ firstWorker.on("error", (err) => {
         message: "First Worker encountered an error",
         errMessage: err.message,
         stack: err.stack
-    }); 
+    });
 });
 secondWorker.on("error", (err) => {
     logger.error({
