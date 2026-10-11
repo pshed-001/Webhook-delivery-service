@@ -8,6 +8,18 @@ import { v7 as uuidV7 } from "uuid";
 
 async function updateDelivery(deliveryData) {
     try {
+        const delivery = await prisma.delivery.findFirst({
+            where: {
+                id: deliveryData.id
+            }
+        })
+        if (!delivery) {
+            logger.info({
+                message: "Delivery does not exist",
+                id: deliveryData.id
+            })
+            throw new error("Delivery does not exist")
+        }
         const del = await prisma.$transaction(async (tx) => {
 
             const updatedDelivery = await tx.delivery.update({
@@ -59,14 +71,14 @@ async function updateDelivery(deliveryData) {
             attemptNum: del.deliveryAttempt.attemptNum
         });
         return del;
-    } catch (error) {
-        logger.error({
+    } catch (err) {
+        logger.err({
             message: "Failed to update delivery",
             info: "Failed to update delivery status and register delivery attempt. Transaction will roll back",
-            errMessage: error.message,
-            stack: error.stack
+            errorMessage: err.message,
+            stack: err.stack
         });
-        throw error;
+        throw new Error("Failed to update delivery", err.stack);
     }
 }
 
@@ -102,9 +114,11 @@ async function updateDeliveryAttempt(attemptId, completedAt, statusCode = null, 
             errorMessage: err.message,
             stack: err.stack
         })
-        throw err
+        throw new Error("Unable to update delivery attempt", err.stack)
     }
 }
 
+async function updateDeliveryAfter() {
 
+}
 export { updateDelivery, updateDeliveryAttempt };

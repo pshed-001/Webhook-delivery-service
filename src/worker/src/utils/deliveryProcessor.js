@@ -103,6 +103,7 @@ async function processDelivery(deliveryData) {
         let nextRetryAt;
         let errorMessage;
         let status = "RETRYING";
+        
         switch (response) {
             case "SUCCESS":
                 statusCode = request?.status
@@ -161,5 +162,8 @@ async function processDelivery(deliveryData) {
         throw new Error(`Error processing delivery: ${err.message}`);
     }
 }
+// two things to begin wrap up. 
+// 1. wrap delivery attempt and delivery update in one transaction. 
+// 2. write code and logic for retry
 
 export { processDelivery };

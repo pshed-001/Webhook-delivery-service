@@ -142,7 +142,7 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
 
-/src/generated/prisma
+/src/shared/prisma
 
 .log.json
 .silly.mistakes
