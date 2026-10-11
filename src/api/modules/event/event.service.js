@@ -20,73 +20,67 @@ async function checkExistingEvent(id) {
     return { exists: false, data: null }
 }
 export const createEvent = async (id, type, payload) => {
-    try {
-        const cr = await prisma.$transaction(async (tx) => {
-            const subscriptions = await tx.subscription.findMany({
-                where: {
-                    type: {
-                        has: type
-                    },
-                    status: "ACTIVE"
-                }
-            })
-            if (subscriptions.length === 0) {
-                throw new AppError("No subscriber to process this event",
-                    409, "No active subscriber for event type"
-                )
+            const { exists } = await checkExistingEvent(id)
+        if (exists) {
+            throw new AppError("Event already exists", 409, "Duplicate event id")
+        }
+    const cr = await prisma.$transaction(async (tx) => {
+        const subscriptions = await tx.subscription.findMany({
+            where: {
+                type: {
+                    has: type
+                },
+                status: "ACTIVE"
             }
-            const event = await tx.event.create({
-                data: {
-                    id, type, payload
-                }
-            })
-
-            const deliveries = subscriptions.map(subscription => ({
-                id: uuidV7(),
-                eventId: event.id,
-                subscriptionId: subscription.id,
-                status: "PENDING",
-                retryCount: 0
-            }))
-            const delivery = await tx.delivery.createMany({
-                data: deliveries
-            })
-
-            return {
-                event, deliveryCount: deliveries.length, deliveries
+        })
+        if (subscriptions.length === 0) {
+            throw new AppError("No subscriber to process this event",
+                409, "No active subscriber for event type"
+            )
+        }
+        const event = await tx.event.create({
+            data: {
+                id, type, payload
             }
-
-
         })
-        logger.info({
-            message: "Event created successfully",
-            id: cr.event.id, activity: "event creation"
-        })
-        logger.info({
-            message: "Delivery records created",
-            eventId: cr.event.id, deliveryCount: cr.deliveries.length
-        })
-
-        await deliveryProducer(cr.deliveries).catch(err => {
-            logger.error({
-                message: "Failed to queue deliveries, daemon will retry",
-                eventId: cr.event.id,
-                info: err.stack,
-            })
+        const deliveries = subscriptions.map(subscription => ({
+            id: uuidV7(),
+            eventId: event.id,
+            subscriptionId: subscription.id,
+            status: "PENDING",
+            retryCount: 0
+        }))
+        const delivery = await tx.delivery.createMany({
+            data: deliveries
         })
 
         return {
-            success: true,
-            message: "Event accepted for delivery",
-            data: cr
+            event, deliveryCount: deliveries.length, deliveries
         }
-    } catch (err) {
+
+
+    })
+    logger.info({
+        message: "Event created successfully",
+        id: cr.event.id, activity: "event creation"
+    })
+    logger.info({
+        message: "Delivery records created",
+        eventId: cr.event.id, deliveryCount: cr.deliveries.length
+    })
+
+    await deliveryProducer(cr.deliveries).catch(err => {
         logger.error({
-            message: "Error encountered during event creation",
+            message: "Failed to queue deliveries, daemon will retry",
+            eventId: cr.event.id,
             info: err.stack,
-            errMessage: err.message
         })
-        throw err
+    })
+
+    return {
+        success: true,
+        message: "Event accepted for delivery",
+        data: cr
     }
 }
 
@@ -124,7 +118,7 @@ export const fetchAllEvents = async (page, limit) => {
     })
     return {
         success: true,
-        meessage: "All events fetched successfully",
+        message: "All events fetched successfully",
         data: {
             events,
             pagination: {
