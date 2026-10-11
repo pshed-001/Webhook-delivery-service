@@ -4,6 +4,7 @@ import { generalValidationResult } from "../../middleware/generalValidator.js";
 
 import express from "express";
 import { validate } from "uuid";
+import { validateLimit, validatePage } from "../delivery/delivery.validator.js";
 
 const eventRouter = express.Router();
 
@@ -20,6 +21,10 @@ eventRouter.post(
   generalValidationResult,
   eventCtrl.createEventCtrl,
 );
+eventRouter.get("/", 
+  validateLimit, validatePage, 
+  generalValidationResult, 
+  eventCtrl.fetchAlllEventCtrl)
 
 export default eventRouter;
 // finished event route for v1

@@ -104,3 +104,37 @@ export const fetchEvent = async (id) => {
 }
 
 // finished it current activity for v1
+
+// function to export all events 
+export const fetchAllEvents = async (page, limit) => {
+    const skip = (page - 1) * limit
+    const [events, total] = await prisma.$transaction([
+        prisma.event.findMany({
+            skip,
+            orderBy: {
+                createdAt: "desc"
+            },
+            take: limit
+        }),
+        prisma.event.count()
+    ])
+    logger.info({
+        message: "All events fetched successfully",
+        total
+    })
+    return {
+        success: true,
+        meessage: "All events fetched successfully",
+        data: {
+            events,
+            pagination: {
+                total,
+                limit,
+                totalPages: Math.ceil(total / limit),
+                page
+
+            }
+        }
+    }
+}
+// added the layer to fetch all the events that are available in the db
