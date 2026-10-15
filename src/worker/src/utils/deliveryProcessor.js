@@ -79,11 +79,13 @@ async function processDelivery(deliveryData) {
         const delivery = await updateDelivery(deliveryData);
         // decrypt the subscription secret
         const decryptedSecret = decrypt(subscription.secret, "aes-256-gcm", env.secretKey);
-        // create the hmac signature for teh request header
 
+        // create the timestamp and signature for the request header
         const reqTimestamp = Date.now();
-        const hmacPayload = event;
-        const signature = createHmacSignature(decryptedSecret, hmacPayload);
+        const hmacPayload = JSON.stringify(event);
+        const toSign = `${reqTimestamp}.${hmacPayload}`;
+        // create the hmac signature for the request header
+        const signature = createHmacSignature(decryptedSecret, toSign);
         // now build a request to send to the subscription callback url using axios
         const request = await axiosReq(subscription.callbackUrl, hmacPayload, signature, reqTimestamp, env.deliveryTimeout);
         const completedAtDate = Date.now()
