@@ -1,7 +1,7 @@
 import axios from "axios";
 import logger from "../../../shared/logger/logger.js";
 
-export async function axiosReq(callbackUrl, eventData, header, timeout = 30000) {
+export async function axiosReq(callbackUrl, body,signature, timestamp,timeout = 30000) {
     //try catch block to cathc axios errors
     try {
         // send request with axios to the subscription callback url 
@@ -9,12 +9,12 @@ export async function axiosReq(callbackUrl, eventData, header, timeout = 30000) 
         const request = await axios({
             method: "post",
             url: callbackUrl,
-            data: eventData,
+            data: body,
             timeout,
             headers: {
                 "Content-Type": "application/json",
-                "x-webhook-signature": header,
-                "x-times": Date.now().toString()
+                "x-webhook-signature": signature,
+                "x-webhook-times": timestamp
             },
             validateStatus: () => true // Accept all status codes to handle them manually
         })

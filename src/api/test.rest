@@ -13,6 +13,8 @@ GET http://localhost:8080/api/delivery/event/01a00c5b-9b18-7065-a959-914cde4e3c9
 
 
 ### Event routes
+### Get all events
+GET http://localhost:8080/api/event?limit=1
 ### Get specific event
 GET http://localhost:8080/api/event/01a00c57-cae8-71c5-a4b0-3c52a483ca49
 

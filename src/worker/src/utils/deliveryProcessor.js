@@ -80,8 +80,11 @@ async function processDelivery(deliveryData) {
         // decrypt the subscription secret
         const decryptedSecret = decrypt(subscription.secret, "aes-256-gcm", env.secretKey);
         // create the hmac signature for teh request header
-        const signature = createHmacSignature(decryptedSecret, JSON.stringify(event));
-
+        const hmacPayload = JSON.stringify({
+            event,
+            timestamp:  Date.now()
+        });
+        const signature = createHmacSignature(decryptedSecret, hmacPayload);
         // now build a request to send to the subscription callback url using axios
         const request = await axiosReq(subscription.callbackUrl, event, signature)
         const completedAtDate = Date.now()
@@ -103,7 +106,7 @@ async function processDelivery(deliveryData) {
         let nextRetryAt;
         let errorMessage;
         let status = "RETRYING";
-        
+
         switch (response) {
             case "SUCCESS":
                 statusCode = request?.status
